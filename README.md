@@ -27,6 +27,13 @@ This is an application built using Python, R, Flask, and Shiny for performing RN
    ```R
    install.packages("shiny")
    install.packages("edgeR")
+   install.packages("shiny")
+   install.packages("shinyjs")
+   install.packages("DT")
+   install.packages("edgeR")
+   install.packages("ggplot2")
+   install.packages("FactoMineR")
+   install.packages("RColorBrewer")
 
 ## Usage
 
