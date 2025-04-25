@@ -17,3 +17,7 @@ This is an application built using Python, R, Flask, and Shiny for performing RN
 1. Clone this repository:
    ```bash
    git clone https://github.com/yourusername/repositoryname.git
+
+2. Install required Python packages:
+
+
