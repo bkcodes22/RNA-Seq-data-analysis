@@ -2,7 +2,7 @@
 
 This is an application built using Python, R, Flask, and Shiny for performing RNA-Seq analysis. The app integrates the following components:
 
-- **Python**: Used to call the STAR alignment tool for aligning RNA-Seq reads.
+- **Python**: Used to call the STAR alignment tool for aligning RNA-Seq reads and generate counts file.
 - **Flask**: Provides a frontend for interacting with the app.
 - **R Shiny App**: Used to process the counts file and generate Differentially Expressed Genes (DEG) results.
 
@@ -27,24 +27,27 @@ This is an application built using Python, R, Flask, and Shiny for performing RN
    ```R
    install.packages("shiny")
    install.packages("edgeR")
-   install.packages("shiny")
    install.packages("shinyjs")
    install.packages("DT")
-   install.packages("edgeR")
    install.packages("ggplot2")
    install.packages("FactoMineR")
    install.packages("RColorBrewer")
+   install.packages("limma")
 
 ## Usage
 
 1. Run the Flask app
    ```
-   python app.py
+   python main.py
    
-2. Access the app via web browser
+2. Select the type of analysis you want to do (From Fastq files or directly through raw counts)
 
 3. Give the path for the STAR executer, Input file / Directory and the Output Directory
 
 4. BAM Files, Count files along with QC stats will be generated in the output directory
 
 5. Run R shiny app, to generate DEG Results.
+
+6. Our pipeline inbuilt uses TMM Normalisation and DEG analysis with limma package and allows you to save the results and plots
+
+7. All the outputs will be generated in the designated directory
