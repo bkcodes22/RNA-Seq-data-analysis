@@ -16,7 +16,7 @@ This is an application built using Python, R, Flask, and Shiny for performing RN
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/yourusername/repositoryname.git
+   git clone https://github.com/bkcodes22/RNA-Seq-data-analysis.git
 
 2. Install required Python packages:
 
