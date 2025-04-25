@@ -23,3 +23,7 @@ This is an application built using Python, R, Flask, and Shiny for performing RN
    ```bash
    pip install -r requirements.txt
 
+3. Install required R packages for Shiny and DEG analysis:
+   ```R
+   install.packages("shiny")
+   install.packages("edgeR")
