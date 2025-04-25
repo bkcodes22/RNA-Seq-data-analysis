@@ -29,3 +29,7 @@ This is an application built using Python, R, Flask, and Shiny for performing RN
    install.packages("edgeR")
 
 ## Usage
+
+1. Run the Flask app
+   ```
+   python app.py
