@@ -1,4 +1,4 @@
-# RNA-Seq Analysis App
+# DEGEasy
 
 This is an application built using Python, R, Flask, and Shiny for performing RNA-Seq analysis. The app integrates the following components:
 
