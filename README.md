@@ -40,7 +40,7 @@ This is an application built using Python, R, Flask, and Shiny for performing RN
 1. Run the Flask app
    ```
    python app.py
-
+   
 2. Access the app via web browser
 
 3. Give the path for the STAR executer, Input file / Directory and the Output Directory
