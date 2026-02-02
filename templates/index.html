@@ -65,11 +65,160 @@
       border-bottom: 2px solid #eee;
       padding-bottom: 0.5rem;
     }
+
+    .file-selection {
+      background-color: #e8f4f8;
+      padding: 1rem;
+      margin-top: 1rem;
+      border-radius: 5px;
+      border-left: 4px solid #3498db;
+    }
+
+    .file-selection h4 {
+      margin-top: 0;
+      color: #2c3e50;
+      font-size: 1rem;
+    }
+
+    .file-list {
+      margin-top: 0.5rem;
+      font-family: monospace;
+      font-size: 0.9em;
+    }
+
+    .file-item {
+      padding: 0.25rem 0;
+      color: #27ae60;
+    }
+
+    .processing-status {
+      background-color: #fff3cd;
+      padding: 1rem;
+      margin-top: 1rem;
+      border-radius: 5px;
+      border-left: 4px solid #ffc107;
+      display: none;
+    }
+
+    .processing-status.active {
+      display: block;
+    }
+
+    .status-messages {
+      max-height: 300px;
+      overflow-y: auto;
+      background-color: #f8f9fa;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      border-radius: 3px;
+      font-family: monospace;
+      font-size: 0.9em;
+    }
+
+    .status-message {
+      padding: 0.25rem 0;
+      color: #333;
+    }
+
+    .terminal-window {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 600px;
+      max-height: 400px;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      display: none;
+      z-index: 1000;
+    }
+
+    .terminal-window.active {
+      display: block;
+    }
+
+    .terminal-header {
+      background: #2d2d2d;
+      padding: 0.5rem 1rem;
+      border-radius: 8px 8px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .terminal-title {
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .terminal-close {
+      background: #ff5f56;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .terminal-content {
+      padding: 1rem;
+      max-height: 320px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85em;
+      line-height: 1.4;
+    }
+
+    .terminal-line {
+      margin: 0.2rem 0;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .multiqc-link {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background-color: #d4edda;
+      border: 1px solid #c3e6cb;
+      border-radius: 5px;
+    }
+
+    .multiqc-link a {
+      color: #155724;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .multiqc-link a:hover {
+      text-decoration: underline;
+    }
+
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #3498db;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
   <script>
     function toggleMode(mode) {
       document.getElementById('batch-fields').classList.toggle('hidden', mode !== 'batch');
       document.getElementById('single-file').classList.toggle('hidden', mode !== 'single');
+    }
+    
+    function toggleReadType(readType) {
+      document.getElementById('single-end-upload').classList.toggle('hidden', readType !== 'single');
+      document.getElementById('paired-end-upload').classList.toggle('hidden', readType !== 'paired');
     }
   </script>
 </head>
@@ -98,28 +247,304 @@
       <input type="number" name="threads" value="8" min="1">
 
       <div class="mode-toggle">
+        <label>Read Type:</label>
+        <input type="radio" name="read_type" value="single" onclick="toggleReadType('single')" checked> Single-End
+        <input type="radio" name="read_type" value="paired" onclick="toggleReadType('paired')"> Paired-End
+      </div>
+
+      <div class="mode-toggle">
         <label>Choose Input Mode:</label>
         <input type="radio" name="mode" value="single" onclick="toggleMode('single')" checked> Single FASTQ File
         <input type="radio" name="mode" value="batch" onclick="toggleMode('batch')"> FASTQ Directory
       </div>
 
       <div id="single-file">
-        <label for="fastq_file">Upload FASTQ File:</label>
-        <input type="file" name="fastq_file" accept=".fastq">
+        <div id="single-end-upload">
+          <label for="fastq_file">Upload FASTQ File:</label>
+          <input type="file" name="fastq_file" accept=".fastq,.fastq.gz" onchange="updateFileSelection()">
+        </div>
+        <div id="paired-end-upload" class="hidden">
+          <label for="fastq_file_1">Upload Forward Read (R1):</label>
+          <input type="file" name="fastq_file_1" accept=".fastq,.fastq.gz" onchange="updateFileSelection()">
+          <label for="fastq_file_2" style="margin-top: 1rem;">Upload Reverse Read (R2):</label>
+          <input type="file" name="fastq_file_2" accept=".fastq,.fastq.gz" onchange="updateFileSelection()">
+        </div>
       </div>
 
       <div id="batch-fields" class="hidden">
         <label for="input_dir">Input Directory (containing FASTQ files):</label>
-        <input type="text" name="input_dir">
+        <input type="text" name="input_dir" onchange="updateFileSelection()" onkeyup="updateFileSelection()">
+        <p style="font-size: 0.9em; color: #666; margin-top: 0.5rem;">
+          For paired-end: Files will be automatically paired based on common naming patterns (e.g., _R1/_R2, _1/_2, _forward/_reverse)
+        </p>
+      </div>
+
+      <div id="file-selection-display" class="file-selection hidden">
+        <h4>📁 Selected Files:</h4>
+        <div id="file-list" class="file-list"></div>
+      </div>
+
+      <div id="processing-status" class="processing-status">
+        <div class="spinner"></div>
+        <strong>Processing...</strong>
+        <div id="processing-details" style="margin-top: 0.5rem; font-size: 0.9em;"></div>
       </div>
     </div>
 
     <div class="box">
       <div class="section-title">📊 MultiQC Summary</div>
       <p>MultiQC will automatically be run on the output directory after STAR finishes processing. Please check the generated QC reports.</p>
+      <div id="multiqc-link-container"></div>
     </div>
 
-    <button type="submit">🚀 Run Pipeline</button>
+    <button type="button" id="run-button">🚀 Run Pipeline</button>
   </form>
+
+    <div id="status-messages-container" class="box" style="display: none;">
+      <div class="section-title">📋 Processing Status</div>
+      <div id="status-messages" class="status-messages"></div>
+      <button onclick="toggleTerminal()" style="margin-top: 0.5rem; padding: 0.5rem 1rem; background-color: #6c757d; color: white; border: none; border-radius: 3px; cursor: pointer;">
+        📺 Toggle Terminal Output
+      </button>
+    </div>
+
+  <div id="terminal-window" class="terminal-window">
+    <div class="terminal-header">
+      <span class="terminal-title">Terminal Output</span>
+      <div class="terminal-close" onclick="closeTerminal()"></div>
+    </div>
+    <div id="terminal-content" class="terminal-content"></div>
+  </div>
+
+  <script>
+    function toggleMode(mode) {
+      document.getElementById('batch-fields').classList.toggle('hidden', mode !== 'batch');
+      document.getElementById('single-file').classList.toggle('hidden', mode !== 'single');
+      updateFileSelection();
+    }
+    
+    function toggleReadType(readType) {
+      document.getElementById('single-end-upload').classList.toggle('hidden', readType !== 'single');
+      document.getElementById('paired-end-upload').classList.toggle('hidden', readType !== 'paired');
+      updateFileSelection();
+    }
+
+    function updateFileSelection() {
+      const mode = document.querySelector('input[name="mode"]:checked').value;
+      const readType = document.querySelector('input[name="read_type"]:checked').value;
+      const fileDisplay = document.getElementById('file-selection-display');
+      const fileList = document.getElementById('file-list');
+      
+      fileList.innerHTML = '';
+      
+      if (mode === 'single') {
+        if (readType === 'single') {
+          const fileInput = document.querySelector('input[name="fastq_file"]');
+          if (fileInput && fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            fileList.innerHTML = '<div class="file-item">📄 ' + file.name + ' (Single-End)</div>';
+            fileDisplay.classList.remove('hidden');
+          } else {
+            fileDisplay.classList.add('hidden');
+          }
+        } else {
+          const fileInput1 = document.querySelector('input[name="fastq_file_1"]');
+          const fileInput2 = document.querySelector('input[name="fastq_file_2"]');
+          if (fileInput1 && fileInput1.files.length > 0 && fileInput2 && fileInput2.files.length > 0) {
+            fileList.innerHTML = '<div class="file-item">📄 Forward: ' + fileInput1.files[0].name + '</div>' +
+                                '<div class="file-item">📄 Reverse: ' + fileInput2.files[0].name + '</div>';
+            fileDisplay.classList.remove('hidden');
+          } else {
+            fileDisplay.classList.add('hidden');
+          }
+        }
+      } else {
+        const dirInput = document.querySelector('input[name="input_dir"]');
+        if (dirInput && dirInput.value.trim() !== '') {
+          fileList.innerHTML = '<div class="file-item">📁 Directory: ' + dirInput.value + '</div>' +
+                              '<div class="file-item" style="color: #666; font-size: 0.85em;">Files will be detected and paired automatically</div>';
+          fileDisplay.classList.remove('hidden');
+        } else {
+          fileDisplay.classList.add('hidden');
+        }
+      }
+    }
+
+    let currentJobId = null;
+    let statusEventSource = null;
+    let terminalInterval = null;
+
+    document.getElementById('run-button').addEventListener('click', function(e) {
+      e.preventDefault();
+      // Prevent multiple clicks
+      if (this.disabled) {
+        return;
+      }
+      startProcessing();
+    });
+
+    function startProcessing() {
+      // Prevent multiple clicks
+      const runButton = document.getElementById('run-button');
+      if (runButton.disabled) {
+        return;
+      }
+      
+      // Validate form before starting
+      const form = document.querySelector('form');
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+      
+      const formData = new FormData(form);
+      
+      // Show processing status immediately
+      document.getElementById('processing-status').classList.add('active');
+      document.getElementById('status-messages-container').style.display = 'block';
+      document.getElementById('status-messages').innerHTML = '';
+      document.getElementById('multiqc-link-container').innerHTML = '';
+      runButton.disabled = true;
+      
+      // Submit form via AJAX
+      fetch('/', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          alert('Error: ' + data.error);
+          document.getElementById('processing-status').classList.remove('active');
+          document.getElementById('run-button').disabled = false;
+          return;
+        }
+        
+        currentJobId = data.job_id;
+        startStatusUpdates(currentJobId);
+        startTerminalUpdates(currentJobId);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Error starting processing: ' + error);
+        document.getElementById('processing-status').classList.remove('active');
+        document.getElementById('run-button').disabled = false;
+      });
+    }
+
+    function startStatusUpdates(jobId) {
+      // Close existing connection if any
+      if (statusEventSource) {
+        statusEventSource.close();
+      }
+      
+      statusEventSource = new EventSource('/status/' + jobId);
+      
+      statusEventSource.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        
+        if (data.type === 'message') {
+          const messagesDiv = document.getElementById('status-messages');
+          const messageDiv = document.createElement('div');
+          messageDiv.className = 'status-message';
+          messageDiv.textContent = data.text;
+          messagesDiv.appendChild(messageDiv);
+          messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        } else if (data.type === 'status') {
+          if (data.status === 'completed' || data.status === 'error') {
+            statusEventSource.close();
+            document.getElementById('processing-status').classList.remove('active');
+            document.getElementById('run-button').disabled = false;
+            
+            // Stop terminal updates
+            if (terminalInterval) {
+              clearInterval(terminalInterval);
+              terminalInterval = null;
+            }
+            
+            if (data.multiqc_html) {
+              showMultiQCLink(data.multiqc_html);
+            }
+          }
+          
+          if (data.multiqc_html) {
+            showMultiQCLink(data.multiqc_html);
+          }
+        } else if (data.type === 'error') {
+          alert('Error: ' + data.text);
+          statusEventSource.close();
+          document.getElementById('processing-status').classList.remove('active');
+          document.getElementById('run-button').disabled = false;
+        }
+      };
+      
+      statusEventSource.onerror = function(event) {
+        console.error('SSE error:', event);
+        statusEventSource.close();
+      };
+    }
+
+    function startTerminalUpdates(jobId) {
+      // Clear existing interval if any
+      if (terminalInterval) {
+        clearInterval(terminalInterval);
+      }
+      
+      // Show terminal window
+      document.getElementById('terminal-window').classList.add('active');
+      
+      // Update terminal output every second
+      terminalInterval = setInterval(function() {
+        fetch('/terminal/' + jobId)
+          .then(response => response.json())
+          .then(data => {
+            const terminalContent = document.getElementById('terminal-content');
+            terminalContent.innerHTML = '';
+            data.output.forEach(line => {
+              const lineDiv = document.createElement('div');
+              lineDiv.className = 'terminal-line';
+              lineDiv.textContent = line;
+              terminalContent.appendChild(lineDiv);
+            });
+            terminalContent.scrollTop = terminalContent.scrollHeight;
+          })
+          .catch(error => console.error('Error fetching terminal output:', error));
+      }, 1000);
+    }
+
+    function toggleTerminal() {
+      const terminal = document.getElementById('terminal-window');
+      if (terminal.classList.contains('active')) {
+        closeTerminal();
+      } else {
+        if (currentJobId) {
+          terminal.classList.add('active');
+          startTerminalUpdates(currentJobId);
+        }
+      }
+    }
+
+    function closeTerminal() {
+      document.getElementById('terminal-window').classList.remove('active');
+      if (terminalInterval) {
+        clearInterval(terminalInterval);
+        terminalInterval = null;
+      }
+    }
+
+    function showMultiQCLink(htmlPath) {
+      const container = document.getElementById('multiqc-link-container');
+      const linkUrl = '/multiqc?file=' + encodeURIComponent(htmlPath);
+      container.innerHTML = '<div class="multiqc-link">' +
+        '<strong>📊 MultiQC Report Ready!</strong><br>' +
+        '<a href="' + linkUrl + '" target="_blank">Open MultiQC Report in New Window</a>' +
+        '</div>';
+    }
+
+    // Update file selection display on page load if files are already selected
+    window.addEventListener('load', function() {
+      updateFileSelection();
+    });
+  </script>
 </body>
 </html>
